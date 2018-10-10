@@ -11,7 +11,6 @@ function loadWithTag(path, cb) {
   if (Ember.Test) {
     Ember.Test.registerWaiter(() => finished);
   }
-  head.appendChild(s);
 
   s.onload = s.onreadystatechange = function(_, abort) {
     finished = true;
@@ -27,6 +26,8 @@ function loadWithTag(path, cb) {
       }
     }
   };
+
+  head.appendChild(s);
 }
 
 export function loadCSS(url) {
@@ -40,18 +41,17 @@ export default function loadScript(url, opts) {
   }
 
   opts = opts || {};
+  url = Discourse.getURL(url);
 
   $("script").each((i, tag) => {
     const src = tag.getAttribute("src");
 
-    if (src && src !== url) {
-      _loaded[tag.getAttribute("src")] = true;
+    if (src && src !== url && !_loading[src]) {
+      _loaded[src] = true;
     }
   });
 
   return new Ember.RSVP.Promise(function(resolve) {
-    url = Discourse.getURL(url);
-
     // If we already loaded this url
     if (_loaded[url]) {
       return resolve();
